@@ -11,7 +11,7 @@ pool:
 
 steps:
 
-# Build the WAR using Maven
+# 1. Build the WAR using Maven + Java 17
 - task: Maven@3
   displayName: 'Build WAR with Maven'
   inputs:
@@ -25,16 +25,30 @@ steps:
     goals: 'clean package'
 
 
-# Copy WAR file to artifact staging directory
+# 2. Verify Maven created the WAR
+- script: |
+    echo "Contents of target directory:"
+    ls -la target
+  displayName: 'Verify WAR created'
+
+
+# 3. Copy WAR into artifact staging folder
 - task: CopyFiles@2
-  displayName: 'Copy WAR artifact'
+  displayName: 'Copy WAR to artifact staging'
   inputs:
     SourceFolder: '$(System.DefaultWorkingDirectory)/target'
-    Contents: '*.war'
+    Contents: '**/*.war'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 
-# Publish WAR artifact for Release pipeline
+# 4. Verify artifact staging contains WAR
+- script: |
+    echo "Contents of artifact staging directory:"
+    ls -la $(Build.ArtifactStagingDirectory)
+  displayName: 'Verify artifact contents'
+
+
+# 5. Publish artifact for Release pipeline
 - task: PublishBuildArtifacts@1
   displayName: 'Publish WAR artifact'
   inputs:
